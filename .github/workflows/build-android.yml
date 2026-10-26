@@ -24,9 +24,35 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
-
-      - name: Setup Godot export environment
+          
+      - name: Diagnose Android export setup
         run: |
+          echo "=== Godot ==="
+          godot --version
+
+          echo "=== Java ==="
+          echo "$JAVA_HOME"
+          java -version
+
+          echo "=== Android SDK environment ==="
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+
+          echo "=== SDK folders ==="
+          ls -la /usr/lib/android-sdk
+          ls -la /usr/lib/android-sdk/build-tools
+          ls -la /usr/lib/android-sdk/platforms
+          ls -la /usr/lib/android-sdk/platform-tools
+
+          echo "=== Godot settings ==="
+          cat "$HOME/.config/godot/editor_settings-4.3.tres"
+
+          echo "=== Export templates ==="
+          ls -la "$HOME/.local/share/godot/export_templates/4.3.stable"
+
+          echo "=== Debug keystore ==="
+          ls -l /root/debug.keystore
+          
           mkdir -p "$HOME/.config"
           mkdir -p "$HOME/.local/share/godot/export_templates"
 
