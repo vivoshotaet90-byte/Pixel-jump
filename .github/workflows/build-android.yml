@@ -33,7 +33,7 @@ jobs:
           docker run --rm \
             -v "$PWD:/project" \
             -w /project \
-            barichello/godot-ci:4.3.0 \
+            barichello/godot-ci:4.3
             godot --headless --editor --path /project --quit
 
       - name: Export Android APK
@@ -42,7 +42,8 @@ jobs:
           docker run --rm \
             -v "$PWD:/project" \
             -w /project \
-            barichello/godot-ci:4.3.0 \
+            barichello/godot-ci:4.3
+        
             godot --headless --verbose --path /project \
             --export-debug "Android" /project/build/PixelJump.apk
 
