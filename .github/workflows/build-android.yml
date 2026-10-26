@@ -9,23 +9,33 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.3
+
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
 
+      - name: Prepare Godot templates
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates
+          mkdir -p ~/.config
+          cp -r /root/.config/godot ~/.config/ || true
+          cp -r /root/.local/share/godot/export_templates/4.3.stable \
+            ~/.local/share/godot/export_templates/
+
+      - name: Import project
+        run: |
+          godot --headless --editor --path . --quit
+
       - name: Build Android APK
         run: |
           mkdir -p build
-          docker run --rm \
-            -v "$PWD":/project \
-            -w /project \
-            barichello/godot-ci:4.3.0 \
-            godot --headless --path /project \
-            --export-debug Android /project/build/PixelJump.apk
+          godot --headless --path . \
+            --export-debug "Android" build/PixelJump.apk
 
       - name: Upload APK
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Pixel-Jump-APK
