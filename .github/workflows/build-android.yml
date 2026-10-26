@@ -1,5 +1,4 @@
 
-
 name: Build Pixel Jump APK
 
 on:
@@ -15,61 +14,38 @@ jobs:
   build:
     name: Build Android APK
     runs-on: ubuntu-22.04
-
     container:
       image: barichello/godot-ci:4.3
+
+    env:
+      HOME: /root
+      ANDROID_HOME: /usr/lib/android-sdk
+      ANDROID_SDK_ROOT: /usr/lib/android-sdk
+      JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
 
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
         with:
           lfs: true
-          
-      - name: Diagnose Android export setup
+
+      - name: Check Android environment
         run: |
           echo "=== Godot ==="
           godot --version
 
           echo "=== Java ==="
-          echo "$JAVA_HOME"
           java -version
 
-          echo "=== Android SDK environment ==="
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-
-          echo "=== SDK folders ==="
-          ls -la /usr/lib/android-sdk
-          ls -la /usr/lib/android-sdk/build-tools
-          ls -la /usr/lib/android-sdk/platforms
-          ls -la /usr/lib/android-sdk/platform-tools
+          echo "=== Android SDK ==="
+          ls -la "$ANDROID_HOME/build-tools"
+          ls -la "$ANDROID_HOME/platforms"
 
           echo "=== Godot settings ==="
-          cat "$HOME/.config/godot/editor_settings-4.3.tres"
+          find /root/.config/godot -maxdepth 2 -type f 2>/dev/null || true
 
           echo "=== Export templates ==="
-          ls -la "$HOME/.local/share/godot/export_templates/4.3.stable"
-
-          echo "=== Debug keystore ==="
-          ls -l /root/debug.keystore
-          
-          mkdir -p "$HOME/.config"
-          mkdir -p "$HOME/.local/share/godot/export_templates"
-
-          cp -a /root/.config/godot "$HOME/.config/"
-
-          cp -a \
-            /root/.local/share/godot/export_templates/4.3.stable \
-            "$HOME/.local/share/godot/export_templates/"
-
-          echo "Godot version:"
-          godot --version
-
-          echo "Android SDK:"
-          ls -la /usr/lib/android-sdk
-
-          echo "Build tools:"
-          ls -la /usr/lib/android-sdk/build-tools
+          ls -la /root/.local/share/godot/export_templates/ || true
 
       - name: Check project files
         run: |
@@ -85,10 +61,8 @@ jobs:
       - name: Export Android APK
         run: |
           mkdir -p build
-
           godot --headless --verbose --path . \
             --export-debug "Android" build/PixelJump.apk
-
           test -s build/PixelJump.apk
           ls -lh build/PixelJump.apk
 
