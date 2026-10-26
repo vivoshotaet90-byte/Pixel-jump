@@ -13,41 +13,45 @@ permissions:
 jobs:
   build:
     name: Build Android APK
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    container:
+      image: barichello/godot-ci:4.3
+
+    env:
+      GODOT_VERSION: "4.3"
 
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup Godot
+        run: |
+          mkdir -p "$HOME/.config"
+          mkdir -p "$HOME/.local/share/godot/export_templates"
+          cp -a /root/.config/godot/. "$HOME/.config/godot/" 2>/dev/null || true
+          cp -a /root/.local/share/godot/export_templates/4.3.stable "$HOME/.local/share/godot/export_templates/" 2>/dev/null || true
+          godot --version
+          ls -la
 
       - name: Check project files
         run: |
-          echo "Checking required files..."
           test -f project.godot
           test -f Main.tscn
           test -f main.gd
           test -f export_presets.cfg
-          echo "All required files found."
 
       - name: Import project resources
         run: |
-          docker run --rm \
-            -v "$PWD:/project" \
-            -w /project \
-            barichello/godot-ci:4.3
-            godot --headless --editor --path /project --quit
+          godot --headless --editor --path . --quit
 
       - name: Export Android APK
         run: |
           mkdir -p build
-          docker run --rm \
-            -v "$PWD:/project" \
-            -w /project \
-            barichello/godot-ci:4.3
-        
-            godot --headless --verbose --path /project \
-            --export-debug "Android" /project/build/PixelJump.apk
-
-          test -f build/PixelJump.apk
+          godot --headless --verbose --path . \
+            --export-debug "Android" build/PixelJump.apk
+          test -s build/PixelJump.apk
           ls -lh build/PixelJump.apk
 
       - name: Upload APK
